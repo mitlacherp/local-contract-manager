@@ -1,0 +1,5 @@
+{
+  "name": "Local Contract Manager",
+  "description": "A fully local, AI-powered contract management system using Node.js, SQLite, and Ollama.",
+  "requestFramePermissions": []
+}
