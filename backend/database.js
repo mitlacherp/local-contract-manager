@@ -17,7 +17,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 function initDb() {
   db.serialize(() => {
-    // Users Table
+    // 1. Users Table
     db.run(`CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
@@ -27,7 +27,7 @@ function initDb() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    // Contracts Table
+    // 2. Contracts Table
     db.run(`CREATE TABLE IF NOT EXISTS contracts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
@@ -49,7 +49,7 @@ function initDb() {
       FOREIGN KEY(created_by) REFERENCES users(id)
     )`);
 
-    // Alerts Table
+    // 3. Alerts Table
     db.run(`CREATE TABLE IF NOT EXISTS alerts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       contract_id INTEGER,
@@ -60,7 +60,7 @@ function initDb() {
       FOREIGN KEY(contract_id) REFERENCES contracts(id)
     )`);
 
-    // Attachments Table
+    // 4. Attachments Table
     db.run(`CREATE TABLE IF NOT EXISTS attachments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       contract_id INTEGER,
@@ -72,25 +72,30 @@ function initDb() {
       FOREIGN KEY(contract_id) REFERENCES contracts(id) ON DELETE CASCADE
     )`);
 
-    // Audit Logs Table
+    // 5. Audit Logs Table
     db.run(`CREATE TABLE IF NOT EXISTS audit_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       contract_id INTEGER,
       user_id INTEGER,
       user_name TEXT,
-      action TEXT, -- 'CREATE', 'UPDATE', 'DELETE'
+      action TEXT,
       details TEXT,
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    // Settings Table
+    // 6. Settings Table
     db.run(`CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT
     )`);
 
+    // --- Performance Indices ---
+    db.run("CREATE INDEX IF NOT EXISTS idx_contracts_status ON contracts(status)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_contracts_partner ON contracts(partner_name)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_contracts_end_date ON contracts(end_date)");
+
     // --- FORCE ENSURE ADMIN USER ---
-    // Use INSERT OR REPLACE (Upsert) to reset password but keep ID if possible
+    // Use INSERT INTO ... ON CONFLICT to update password without changing ID
     const adminEmail = 'admin@local.com';
     const adminPass = 'admin123';
     const adminHash = bcrypt.hashSync(adminPass, 10);
@@ -104,7 +109,7 @@ function initDb() {
         name = excluded.name
     `, ['Administrator', adminEmail, adminHash, 'admin'], (err) => {
         if (err) console.error("Error ensuring admin user:", err.message);
-        else console.log("ADMIN ACCOUNT READY: admin@local.com / admin123");
+        else console.log(`[Init] Admin Access: ${adminEmail} (password updated)`);
     });
   });
 }

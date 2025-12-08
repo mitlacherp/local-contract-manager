@@ -21,8 +21,8 @@ const Login: React.FC<Props> = ({ onLogin }) => {
         try {
             const data = await apiService.login(email, password);
             onLogin(data.user, data.token);
-        } catch (err) {
-            setError('Invalid credentials');
+        } catch (err: any) {
+            setError(err.message || 'Invalid credentials');
         } finally {
             setLoading(false);
         }
@@ -49,7 +49,7 @@ const Login: React.FC<Props> = ({ onLogin }) => {
         borderColor: '#cbd5e1'
     };
 
-    const inputClass = "w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none placeholder-slate-400";
+    const inputClass = "w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none placeholder-slate-400 transition";
 
     return (
         <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
@@ -62,8 +62,8 @@ const Login: React.FC<Props> = ({ onLogin }) => {
                     <p className="text-slate-500 mt-1">Secure, Local, AI-Powered</p>
                 </div>
 
-                {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{error}</div>}
-                {info && <div className="mb-4 p-3 bg-green-50 text-green-600 text-sm rounded-lg border border-green-100">{info}</div>}
+                {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 text-center font-medium">{error}</div>}
+                {info && <div className="mb-4 p-3 bg-green-50 text-green-600 text-sm rounded-lg border border-green-100 text-center">{info}</div>}
 
                 {!forgotMode ? (
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -97,12 +97,14 @@ const Login: React.FC<Props> = ({ onLogin }) => {
                                 />
                             </div>
                         </div>
-                        <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700 transition flex justify-center shadow-md">
+                        <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700 transition flex justify-center shadow-md disabled:opacity-70">
                             {loading ? <Loader2 className="animate-spin" /> : 'Login'}
                         </button>
-                        <button type="button" onClick={() => setForgotMode(true)} className="w-full text-sm text-slate-500 hover:text-blue-600 mt-2">
-                            Forgot Password?
-                        </button>
+                        <div className="flex justify-between items-center mt-4">
+                            <button type="button" onClick={() => setForgotMode(true)} className="text-sm text-slate-500 hover:text-blue-600">
+                                Forgot Password?
+                            </button>
+                        </div>
                     </form>
                 ) : (
                     <form onSubmit={handleForgot} className="space-y-4">
@@ -117,10 +119,10 @@ const Login: React.FC<Props> = ({ onLogin }) => {
                             value={email} 
                             onChange={e => setEmail(e.target.value)} 
                          />
-                         <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition">
-                            Send Reset Link
+                         <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition flex justify-center">
+                            {loading ? <Loader2 className="animate-spin" /> : 'Send Reset Link'}
                         </button>
-                        <button type="button" onClick={() => setForgotMode(false)} className="w-full text-sm text-slate-500">
+                        <button type="button" onClick={() => setForgotMode(false)} className="w-full text-sm text-slate-500 hover:text-slate-800">
                             Back to Login
                         </button>
                     </form>
